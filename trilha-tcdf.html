@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trilha TCDF — Analista de Controle Externo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f172a;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
+
+/* ── HEADER ── */
+#hdr{background:#1e293b;padding:14px 20px;border-bottom:1px solid #334155;position:sticky;top:0;z-index:50}
+.hdr-row1{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.hdr-title{font-size:17px;font-weight:700;color:#f1f5f9}
+.hdr-sub{font-size:11px;color:#64748b;margin-left:6px}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.hdr-btn{background:transparent;border:1px solid #334155;color:#94a3b8;padding:5px 11px;border-radius:5px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .15s}
+.hdr-btn:hover{background:#334155;color:#f1f5f9}
+.big-pct{font-size:26px;font-weight:700;color:#22c55e;min-width:52px;text-align:right}
+.pbar-wrap{background:#0f172a;border-radius:4px;height:6px;overflow:hidden;margin-bottom:8px}
+.pbar{height:100%;background:#22c55e;width:0%;transition:width .4s;border-radius:4px}
+#hstats{display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:#94a3b8}
+
+/* ── BOARD ── */
+#board-wrap{overflow-x:auto;padding:12px 8px 20px;-webkit-overflow-scrolling:touch}
+#board{display:flex;gap:4px;min-width:max-content;align-items:flex-start}
+
+/* Phase group */
+.ph-group{display:flex;flex-direction:column;gap:3px}
+.ph-label{border-radius:4px;padding:5px 9px;font-size:10px;font-weight:700;letter-spacing:.06em;text-align:center;color:#fff;white-space:nowrap;cursor:default;user-select:none}
+.ph-weeks{display:flex;gap:4px;align-items:flex-start}
+
+/* Week column */
+.wk-col{width:168px;background:#1e293b;border-radius:6px;border:1px solid #334155;overflow:hidden}
+.wk-hdr{background:#273549;padding:7px 9px;border-bottom:1px solid #334155}
+.wk-num{font-size:9px;font-weight:700;color:#64748b;letter-spacing:.08em;margin-bottom:2px}
+.wk-title{font-size:11px;font-weight:600;color:#cbd5e1;line-height:1.3;margin-bottom:5px;min-height:28px}
+.wk-mini-bar{background:#1e293b;border-radius:2px;height:3px;overflow:hidden;margin-bottom:2px}
+.wk-mini-fill{height:100%;background:#22c55e;transition:width .3s}
+.wk-prog{font-size:9px;color:#475569}
+.wk-days{padding:4px;display:flex;flex-direction:column;gap:3px}
+
+/* Topic box */
+.box{border-radius:4px;border:1px solid;padding:6px;cursor:pointer;transition:filter .1s}
+.box:hover{filter:brightness(1.15)}
+.box-top{display:flex;align-items:center;gap:4px;margin-bottom:3px}
+.box-day{font-size:9px;opacity:.65;min-width:22px;flex-shrink:0}
+.box-sub{font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;color:#fff;flex-shrink:0}
+.box-chk{margin-left:auto;font-size:13px;cursor:pointer;flex-shrink:0;line-height:1;padding:1px}
+.box-text{font-size:10px;line-height:1.4}
+.box-stats-row{font-size:9px;margin-top:3px;opacity:.7}
+.box-form{margin-top:7px;padding-top:7px;display:flex;flex-direction:column;gap:5px}
+.box-form-row{display:flex;gap:5px}
+.bi-wrap{flex:1;min-width:0}
+.bi-lbl{font-size:9px;opacity:.65;margin-bottom:2px}
+.bi{width:100%;background:#0f172a;border:1px solid;border-radius:3px;padding:4px 5px;font-size:11px;font-family:inherit;outline:none}
+.bsave{width:100%;border:none;border-radius:3px;padding:5px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;color:#fff;transition:opacity .15s}
+.bsave:hover{opacity:.85}
+
+/* ── MODAL ── */
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;align-items:center;justify-content:center}
+#modal.show{display:flex}
+.modal-box{background:#1e293b;border-radius:12px;padding:22px;width:320px;max-width:90vw;border:1px solid #475569}
+.modal-title{font-size:14px;font-weight:600;color:#f1f5f9;margin-bottom:12px}
+.modal-ta{width:100%;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:9px;color:#e2e8f0;font-size:11px;font-family:monospace;height:150px;resize:vertical;outline:none}
+.modal-btns{display:flex;gap:8px;margin-top:12px}
+.mbtn{flex:1;padding:8px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit}
+.mbtn-ok{background:#22c55e;color:#052e16}
+.mbtn-ok:hover{background:#16a34a}
+.mbtn-cancel{background:#334155;color:#94a3b8}
+.mbtn-cancel:hover{background:#475569}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:20px;right:20px;background:#22c55e;color:#052e16;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:300}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div id="hdr">
+  <div class="hdr-row1">
+    <div>
+      <span class="hdr-title">🎯 Trilha TCDF</span>
+      <span class="hdr-sub">Analista Administrativo de Controle Externo</span>
+    </div>
+    <div class="hdr-right">
+      <button class="hdr-btn" onclick="exportData()">⬇ Exportar JSON</button>
+      <button class="hdr-btn" onclick="showImport()">⬆ Importar JSON</button>
+      <span class="big-pct" id="pct">0%</span>
+    </div>
+  </div>
+  <div class="pbar-wrap"><div class="pbar" id="pbar"></div></div>
+  <div id="hstats"></div>
+</div>
+
+<!-- ── BOARD ── -->
+<div id="board-wrap">
+  <div id="board"></div>
+</div>
+
+<!-- ── IMPORT MODAL ── -->
+<div id="modal">
+  <div class="modal-box">
+    <div class="modal-title">📤 Importar progresso</div>
+    <p style="font-size:11px;color:#94a3b8;margin-bottom:10px;">Cole aqui o JSON exportado de outro dispositivo:</p>
+    <textarea id="imp-ta" class="modal-ta" placeholder='{"w01d1":{"ok":1,"q":50,"a":78},...}'></textarea>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-ok" onclick="importData()">Importar</button>
+      <button class="mbtn mbtn-cancel" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════
+//  DATA — 22 semanas / 9 fases / 110 tópicos
+// ════════════════════════════════════════
+const PHASES=[
+  {id:1,n:'Língua Portuguesa',s:'LP',c:'#1d4ed8',
+   w:[
+    {n:1,t:'Compreensão e Coesão',d:[
+      {id:'w01d1',sub:'LP',tx:'Compreensão e interpretação de textos de gêneros variados'},
+      {id:'w01d2',sub:'LP',tx:'Tipos e gêneros textuais + Significação das palavras'},
+      {id:'w01d3',sub:'LP',tx:'Ortografia oficial + Coesão textual'},
+      {id:'w01d4',sub:'LP',tx:'Referenciação, substituição, conectores e sequenciação textual'},
+      {id:'w01d5',sub:'LP',tx:'Exercícios de fixação e revisão da semana'}
+    ]},
+    {n:2,t:'Morfossintaxe',d:[
+      {id:'w02d1',sub:'LP',tx:'Tempos e modos verbais + Classes de palavras'},
+      {id:'w02d2',sub:'LP',tx:'Coordenação e subordinação entre orações e termos'},
+      {id:'w02d3',sub:'LP',tx:'Pontuação + Concordância verbal e nominal'},
+      {id:'w02d4',sub:'LP',tx:'Regência verbal e nominal + Emprego da crase'},
+      {id:'w02d5',sub:'LP',tx:'Colocação de pronomes átonos + exercícios'}
+    ]},
+    {n:3,t:'Reescrita e Redação Oficial',d:[
+      {id:'w03d1',sub:'LP',tx:'Substituição de palavras e reorganização de orações'},
+      {id:'w03d2',sub:'LP',tx:'Reescrita de textos em diferentes gêneros e formalidade'},
+      {id:'w03d3',sub:'LP',tx:'Manual de Redação Oficial do TCDF (2ª edição)'},
+      {id:'w03d4',sub:'LP',tx:'Revisão geral de Língua Portuguesa'},
+      {id:'w03d5',sub:'SIM',tx:'SIMULADO 1 — Língua Portuguesa',sim:1}
+    ]}
+   ]
+  },
+  {id:2,n:'Raciocínio Lógico',s:'RL',c:'#5b21b6',
+   w:[
+    {n:4,t:'Lógica Proposicional',d:[
+      {id:'w04d1',sub:'RL',tx:'Proposições simples e compostas + estruturas lógicas'},
+      {id:'w04d2',sub:'RL',tx:'Tabelas-verdade + conectivos lógicos'},
+      {id:'w04d3',sub:'RL',tx:'Equivalências lógicas + Leis de De Morgan'},
+      {id:'w04d4',sub:'RL',tx:'Lógica de argumentação: analogias, inferências e deduções'},
+      {id:'w04d5',sub:'RL',tx:'Diagramas lógicos + Lógica de primeira ordem'}
+    ]},
+    {n:5,t:'Conjuntos e Problemas',d:[
+      {id:'w05d1',sub:'RL',tx:'Operações com conjuntos + diagramas de Euler-Venn'},
+      {id:'w05d2',sub:'RL',tx:'Princípios de contagem: permutação, arranjo e combinação'},
+      {id:'w05d3',sub:'RL',tx:'Probabilidade aplicada ao raciocínio lógico'},
+      {id:'w05d4',sub:'RL',tx:'Problemas aritméticos, geométricos e matriciais'},
+      {id:'w05d5',sub:'SIM',tx:'SIMULADO 2 — Raciocínio Lógico',sim:1}
+    ]}
+   ]
+  },
+  {id:3,n:'Estatística',s:'EST',c:'#0f766e',
+   w:[
+    {n:6,t:'Estatística Descritiva',d:[
+      {id:'w06d1',sub:'EST',tx:'Variáveis quantitativas/qualitativas + séries estatísticas'},
+      {id:'w06d2',sub:'EST',tx:'Distribuição de frequências: absoluta, relativa e acumulada'},
+      {id:'w06d3',sub:'EST',tx:'Medidas de posição: média, moda, mediana e separatrizes'},
+      {id:'w06d4',sub:'EST',tx:'Medidas de dispersão: desvio padrão, variância e CV'},
+      {id:'w06d5',sub:'EST',tx:'Assimetria, curtose, histogramas, box-plot e outliers'}
+    ]},
+    {n:7,t:'Probabilidade e Amostragem',d:[
+      {id:'w07d1',sub:'EST',tx:'Probabilidade: definições básicas e axiomas'},
+      {id:'w07d2',sub:'EST',tx:'Probabilidade condicional e independência de eventos'},
+      {id:'w07d3',sub:'EST',tx:'Amostragem: simples, estratificada, sistemática e conglomerados'},
+      {id:'w07d4',sub:'EST',tx:'Revisão geral de Estatística + exercícios'},
+      {id:'w07d5',sub:'SIM',tx:'SIMULADO 3 — Estatística',sim:1}
+    ]}
+   ]
+  },
+  {id:4,n:'Matemática Financeira',s:'MF',c:'#b45309',
+   w:[
+    {n:8,t:'Juros e Taxas',d:[
+      {id:'w08d1',sub:'MF',tx:'Regra de três simples e composta + porcentagens'},
+      {id:'w08d2',sub:'MF',tx:'Juros simples: cálculo, capitalização e desconto simples'},
+      {id:'w08d3',sub:'MF',tx:'Juros compostos: capitalização e desconto composto'},
+      {id:'w08d4',sub:'MF',tx:'Taxas de juros: nominal, efetiva e equivalente'},
+      {id:'w08d5',sub:'MF',tx:'Rendas uniformes e variáveis (anuidades)'}
+    ]},
+    {n:9,t:'Amortização e Custo Efetivo',d:[
+      {id:'w09d1',sub:'MF',tx:'Sistema de Amortização Constante (SAC)'},
+      {id:'w09d2',sub:'MF',tx:'Sistema Price (Francês) + comparativo entre sistemas'},
+      {id:'w09d3',sub:'MF',tx:'Custo efetivo de operações de financiamento e investimento'},
+      {id:'w09d4',sub:'MF',tx:'Revisão geral + resolução de casos práticos'},
+      {id:'w09d5',sub:'SIM',tx:'SIMULADO 4 — Matemática Financeira',sim:1}
+    ]}
+   ]
+  },
+  {id:5,n:'Legislação do DF',s:'LEG',c:'#4b5563',
+   w:[
+    {n:10,t:'Lei Orgânica do DF',d:[
+      {id:'w10d1',sub:'LODF',tx:'Princípios e fundamentos da organização do DF'},
+      {id:'w10d2',sub:'LODF',tx:'Organização do Distrito Federal: território e estrutura'},
+      {id:'w10d3',sub:'LODF',tx:'Organização dos poderes: Poder Legislativo'},
+      {id:'w10d4',sub:'LODF',tx:'Poder Executivo e Administração Pública do DF'},
+      {id:'w10d5',sub:'LODF',tx:'Tributação, orçamento e ordem econômica do DF'}
+    ]},
+    {n:11,t:'Regime Jurídico dos Servidores',d:[
+      {id:'w11d1',sub:'RJ',tx:'LC 840/2011: visão geral, carreiras e regime de trabalho'},
+      {id:'w11d2',sub:'RJ',tx:'Jornada de trabalho + Direitos dos servidores'},
+      {id:'w11d3',sub:'RJ',tx:'Deveres dos servidores + Regime disciplinar'},
+      {id:'w11d4',sub:'RJ',tx:'Revisão LODF + RJ + exercícios integrados'},
+      {id:'w11d5',sub:'SIM',tx:'SIMULADO 5 — Legislação DF (LODF + RJ)',sim:1}
+    ]}
+   ]
+  },
+  {id:6,n:'Controle e Previdência',s:'CAP',c:'#166534',
+   w:[
+    {n:12,t:'Controle da Adm. Pública',d:[
+      {id:'w12d1',sub:'CAP',tx:'Controle interno e externo: conceitos, tipos e formas'},
+      {id:'w12d2',sub:'CAP',tx:'Controle parlamentar e controle administrativo'},
+      {id:'w12d3',sub:'CAP',tx:'Controle judicial + Lei de Improbidade Adm. (Lei 8.429/92)'},
+      {id:'w12d4',sub:'CAP',tx:'Tribunais de Contas: funções, competências e jurisdição'},
+      {id:'w12d5',sub:'CAP',tx:'Lei Orgânica TCDF (LC 1/1994): natureza e competências'}
+    ]},
+    {n:13,t:'Estrutura e Decisões do TCDF',d:[
+      {id:'w13d1',sub:'CAP',tx:'TCDF: composição, plenário e câmaras'},
+      {id:'w13d2',sub:'CAP',tx:'TCDF: presidente, vice, conselheiros, auditores e MP'},
+      {id:'w13d3',sub:'CAP',tx:'Serviços auxiliares do TCDF + eficácia das decisões'},
+      {id:'w13d4',sub:'CAP',tx:'Revisão geral de Controle da Administração Pública'},
+      {id:'w13d5',sub:'SIM',tx:'SIMULADO 6 — Controle da Adm. Pública + TCDF',sim:1}
+    ]},
+    {n:14,t:'Direito Previdenciário',d:[
+      {id:'w14d1',sub:'DP',tx:'Seguridade Social: origem, evolução e princípios constitucionais'},
+      {id:'w14d2',sub:'DP',tx:'RGPS: Leis Federais 8.212/91 e 8.213/91 (benefícios e custeio)'},
+      {id:'w14d3',sub:'DP',tx:'RPPS dos Servidores + RPPS/DF (LC Distrital 769/08)'},
+      {id:'w14d4',sub:'DP',tx:'Previdência complementar: LC 108/01, 109/01 e LC 932/17'},
+      {id:'w14d5',sub:'SIM',tx:'SIMULADO 7 — Direito Previdenciário',sim:1}
+    ]}
+   ]
+  },
+  {id:7,n:'Análise de Dados',s:'AD',c:'#b91c1c',
+   w:[
+    {n:15,t:'Fundamentos de Dados',d:[
+      {id:'w15d1',sub:'AD',tx:'Dado, informação, conhecimento e inteligência'},
+      {id:'w15d2',sub:'AD',tx:'Dados estruturados/não estruturados + dados abertos'},
+      {id:'w15d3',sub:'AD',tx:'Coleta, tratamento, armazenamento e recuperação de dados'},
+      {id:'w15d4',sub:'AD',tx:'Tipos de análise: descritiva, exploratória, preditiva e prescritiva'},
+      {id:'w15d5',sub:'AD',tx:'Tomada de decisão baseada em dados + revisão conceitual'}
+    ]},
+    {n:16,t:'Excel e Power Query',d:[
+      {id:'w16d1',sub:'AD',tx:'Excel: importação via Power Query + validação de dados'},
+      {id:'w16d2',sub:'AD',tx:'Excel: auditoria de fórmulas + consolidação de dados'},
+      {id:'w16d3',sub:'AD',tx:'Excel: tabelas dinâmicas e segmentação de dados'},
+      {id:'w16d4',sub:'AD',tx:'Excel: fórmulas lógicas, financeiras e de texto'},
+      {id:'w16d5',sub:'AD',tx:'Excel: formatação condicional + gráficos + macro e VBA'}
+    ]},
+    {n:17,t:'Estatística Aplicada',d:[
+      {id:'w17d1',sub:'AD',tx:'Distribuição de frequências + medidas de posição'},
+      {id:'w17d2',sub:'AD',tx:'Medidas de dispersão + correlação + box-plot e outliers'},
+      {id:'w17d3',sub:'AD',tx:'Distribuições de probabilidade: binomial e normal'},
+      {id:'w17d4',sub:'AD',tx:'Inferência: estimação, intervalos de confiança e testes'},
+      {id:'w17d5',sub:'SIM',tx:'SIMULADO 8 — Análise de Dados + Estatística Aplicada',sim:1}
+    ]}
+   ]
+  },
+  {id:8,n:'Conhecimentos DF',s:'CDF',c:'#0f766e',
+   w:[
+    {n:18,t:'Realidade do DF e Política para Mulheres',d:[
+      {id:'w18d1',sub:'CDF',tx:'Realidade étnica, social e histórica do Distrito Federal'},
+      {id:'w18d2',sub:'CDF',tx:'Realidade geográfica, política e econômica do DF'},
+      {id:'w18d3',sub:'CDF',tx:'RIDE: LC Federal 94/1998 + Decreto Federal 7.469/2011'},
+      {id:'w18d4',sub:'CDF',tx:'Plano Distrital de Política para Mulheres (2020-2023)'},
+      {id:'w18d5',sub:'SIM',tx:'SIMULADO 9 — Conhecimentos DF + Política para Mulheres',sim:1}
+    ]}
+   ]
+  },
+  {id:9,n:'Revisão Geral',s:'REV',c:'#374151',
+   w:[
+    {n:19,t:'Revisão LP + RL',d:[
+      {id:'w19d1',sub:'REV',tx:'LP: revisão de morfossintaxe + questões de provas anteriores'},
+      {id:'w19d2',sub:'REV',tx:'LP: revisão de coesão, redação oficial + banco de questões'},
+      {id:'w19d3',sub:'REV',tx:'RL: revisão de lógica proposicional + tabelas-verdade'},
+      {id:'w19d4',sub:'REV',tx:'RL: revisão de conjuntos, contagem e problemas'},
+      {id:'w19d5',sub:'REV',tx:'Resolução de questões LP + RL de provas TCDF anteriores'}
+    ]},
+    {n:20,t:'Revisão EST + MF + AD',d:[
+      {id:'w20d1',sub:'REV',tx:'EST: revisão de estatística descritiva + probabilidade'},
+      {id:'w20d2',sub:'REV',tx:'MF: revisão de juros, taxas e amortização'},
+      {id:'w20d3',sub:'REV',tx:'AD: revisão de fundamentos + Excel'},
+      {id:'w20d4',sub:'REV',tx:'AD: revisão de estatística aplicada + inferência'},
+      {id:'w20d5',sub:'REV',tx:'Resolução de questões EST + MF + AD de provas anteriores'}
+    ]},
+    {n:21,t:'Revisão Legislação e Controle',d:[
+      {id:'w21d1',sub:'REV',tx:'LODF + RJ: revisão completa + questões comentadas'},
+      {id:'w21d2',sub:'REV',tx:'CAP: revisão de controle + Lei Orgânica TCDF'},
+      {id:'w21d3',sub:'REV',tx:'DP: revisão de RGPS, RPPS e previdência complementar'},
+      {id:'w21d4',sub:'REV',tx:'CDF: revisão da realidade do DF + Política para Mulheres'},
+      {id:'w21d5',sub:'REV',tx:'Resolução de questões de legislação de provas TCDF anteriores'}
+    ]},
+    {n:22,t:'Simulados Completos e Pontos Fracos',d:[
+      {id:'w22d1',sub:'REV',tx:'Análise de erros dos simulados + revisão de pontos críticos'},
+      {id:'w22d2',sub:'REV',tx:'Revisão dirigida: tópicos com maior índice de erro'},
+      {id:'w22d3',sub:'REV',tx:'Revisão final dos temas mais cobrados em provas TCDF'},
+      {id:'w22d4',sub:'REV',tx:'Simulado completo P1 (LP, RL, EST, LODF, RJ, CDF)'},
+      {id:'w22d5',sub:'SIM',tx:'SIMULADO 10 — Simulado Completo P1 + P2 (todas as matérias)',sim:1}
+    ]}
+   ]
+  }
+];
+
+// Subject color map  →  {b:background, t:text, bc:border/badge}
+const SC={
+  LP:  {b:'#1e3a5f',t:'#93c5fd',bc:'#1d4ed8'},
+  RL:  {b:'#2e1065',t:'#c4b5fd',bc:'#5b21b6'},
+  EST: {b:'#042f2e',t:'#5eead4',bc:'#0f766e'},
+  MF:  {b:'#451a03',t:'#fcd34d',bc:'#b45309'},
+  AD:  {b:'#450a0a',t:'#fca5a5',bc:'#b91c1c'},
+  CAP: {b:'#052e16',t:'#86efac',bc:'#166534'},
+  LODF:{b:'#1f2937',t:'#9ca3af',bc:'#4b5563'},
+  RJ:  {b:'#3b0764',t:'#e9d5ff',bc:'#7c3aed'},
+  DP:  {b:'#4c0519',t:'#fda4af',bc:'#be185d'},
+  CDF: {b:'#042f2e',t:'#99f6e4',bc:'#0f766e'},
+  SIM: {b:'#450a0a',t:'#fca5a5',bc:'#dc2626'},
+  REV: {b:'#1c1917',t:'#a8a29e',bc:'#57534e'}
+};
+
+const DAYS=['Seg','Ter','Qua','Qui','Sex'];
+const LS_KEY='tcdf_v2';
+
+let ST={}, OPN=null;
+
+// ─── STORAGE ────────────────────────────
+function load(){
+  try{
+    const r=localStorage.getItem(LS_KEY);
+    if(r) ST=JSON.parse(r);
+  }catch(e){ST={};}
+  PHASES.forEach(ph=>ph.w.forEach(wk=>wk.d.forEach(dy=>{
+    if(!ST[dy.id]) ST[dy.id]={ok:0,q:0,a:0};
+  })));
+}
+function save(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(ST));}catch(e){}
+}
+
+// ─── STATS ──────────────────────────────
+function getStats(){
+  let tot=0,done=0,tq=0,ta=0,na=0,sims=0,sdone=0;
+  PHASES.forEach(ph=>ph.w.forEach(wk=>wk.d.forEach(dy=>{
+    tot++;
+    const s=ST[dy.id]||{};
+    if(s.ok)done++;
+    if(s.q>0){tq+=s.q;ta+=s.a;na++;}
+    if(dy.sim){sims++;if(s.ok)sdone++;}
+  })));
+  return{tot,done,tq,avgA:na>0?Math.round(ta/na):0,sims,sdone};
+}
+
+// ─── RENDER HEADER ───────────────────────
+function renderHeader(){
+  const{tot,done,tq,avgA,sims,sdone}=getStats();
+  const pct=tot>0?Math.round(done/tot*100):0;
+  document.getElementById('pct').textContent=pct+'%';
+  document.getElementById('pbar').style.width=pct+'%';
+  const c=pct>=80?'#22c55e':pct>=50?'#f59e0b':'#22c55e';
+  document.getElementById('pct').style.color=c;
+  document.getElementById('pbar').style.background=c;
+  document.getElementById('hstats').innerHTML=
+    `<span>✅ ${done}/${tot} tópicos</span>`+
+    `<span style="opacity:.4">·</span>`+
+    `<span>📝 ${tq.toLocaleString('pt-BR')} questões feitas</span>`+
+    `<span style="opacity:.4">·</span>`+
+    `<span>🎯 ${avgA}% acerto médio</span>`+
+    `<span style="opacity:.4">·</span>`+
+    `<span>🧪 ${sdone}/${sims} simulados realizados</span>`;
+}
+
+// ─── BUILD ONE BOX ───────────────────────
+function mkBox(dy,i){
+  const s=ST[dy.id]||{ok:0,q:0,a:0};
+  const sc=SC[dy.sub]||SC.REV;
+  const isOpen=OPN===dy.id;
+  const done=s.ok;
+
+  // colors based on state
+  const bBg =done?(dy.sim?'#450a0a':'#052e16'):sc.b;
+  const bBc =done?(dy.sim?'#dc2626':'#16a34a'):sc.bc;
+  const bTx =done?(dy.sim?'#fca5a5':'#86efac'):sc.t;
+
+  const formHtml=isOpen?`
+    <div class="box-form" onclick="event.stopPropagation()">
+      <div class="box-form-row">
+        <div class="bi-wrap">
+          <div class="bi-lbl" style="color:${bTx}">Questões feitas</div>
+          <input id="qi_${dy.id}" class="bi" type="number" min="0"
+            value="${s.q||''}" placeholder="0"
+            style="border-color:${sc.bc};color:${bTx};background:#0f172a">
+        </div>
+        <div class="bi-wrap">
+          <div class="bi-lbl" style="color:${bTx}">Acerto (%)</div>
+          <input id="ai_${dy.id}" class="bi" type="number" min="0" max="100"
+            value="${s.a||''}" placeholder="0"
+            style="border-color:${sc.bc};color:${bTx};background:#0f172a">
+        </div>
+      </div>
+      <button class="bsave" style="background:${sc.bc}"
+        onclick="saveQA('${dy.id}')">Salvar</button>
+    </div>`:'';
+
+  return`<div class="box" id="bx_${dy.id}"
+    style="background:${bBg};border-color:${bBc};color:${bTx}"
+    onclick="toggleBox('${dy.id}')">
+    <div class="box-top">
+      <span class="box-day" style="color:${bTx}">${DAYS[i]}</span>
+      <span class="box-sub" style="background:${sc.bc}">${dy.sub}</span>
+      <span class="box-chk" title="Marcar como concluído"
+        onclick="toggleDone('${dy.id}',event)">${done?'✅':'⬜'}</span>
+    </div>
+    <div class="box-text" style="color:${bTx}">${dy.tx}</div>
+    ${s.q>0&&!isOpen?`<div class="box-stats-row" style="color:${bTx}">📝 ${s.q}q &nbsp;🎯 ${s.a}%</div>`:''}
+    ${isOpen?`<div style="border-top:1px solid ${sc.bc};margin-top:5px;padding-top:2px"></div>`:''}
+    ${formHtml}
+  </div>`;
+}
+
+// ─── RENDER BOARD ────────────────────────
+function renderBoard(){
+  const wrap=document.getElementById('board-wrap');
+  const sl=wrap.scrollLeft;
+
+  let html='';
+  PHASES.forEach(ph=>{
+    html+=`<div class="ph-group">`;
+    html+=`<div class="ph-label" style="background:${ph.c}">${ph.s}&nbsp;·&nbsp;${ph.n}</div>`;
+    html+=`<div class="ph-weeks">`;
+
+    ph.w.forEach(wk=>{
+      const wdone=wk.d.filter(d=>ST[d.id]?.ok).length;
+      const wpct=Math.round(wdone/wk.d.length*100);
+      html+=`<div class="wk-col">`;
+      html+=`<div class="wk-hdr">
+        <div class="wk-num">SEMANA ${wk.n}</div>
+        <div class="wk-title">${wk.t}</div>
+        <div class="wk-mini-bar">
+          <div class="wk-mini-fill" style="width:${wpct}%"></div>
+        </div>
+        <div class="wk-prog">${wdone}/${wk.d.length} &nbsp;·&nbsp; ${wpct}%</div>
+      </div>`;
+      html+=`<div class="wk-days">`;
+      wk.d.forEach((dy,i)=>{html+=mkBox(dy,i);});
+      html+=`</div></div>`;
+    });
+
+    html+=`</div></div>`;
+  });
+
+  document.getElementById('board').innerHTML=html;
+  wrap.scrollLeft=sl;
+}
+
+// ─── ACTIONS ────────────────────────────
+function toggleDone(id,e){
+  e.stopPropagation();
+  if(!ST[id]) ST[id]={ok:0,q:0,a:0};
+  ST[id].ok=ST[id].ok?0:1;
+  save();
+  if(ST[id].ok) toast('✅ Tópico concluído!');
+  renderHeader();
+  renderBoard();
+}
+
+function toggleBox(id){
+  OPN=OPN===id?null:id;
+  renderBoard();
+}
+
+function saveQA(id){
+  const q=parseInt(document.getElementById('qi_'+id)?.value)||0;
+  const a=Math.min(100,Math.max(0,parseInt(document.getElementById('ai_'+id)?.value)||0));
+  if(!ST[id]) ST[id]={ok:0,q:0,a:0};
+  ST[id].q=q;
+  ST[id].a=a;
+  OPN=null;
+  save();
+  toast('📊 Progresso salvo!');
+  renderHeader();
+  renderBoard();
+}
+
+// ─── EXPORT / IMPORT ────────────────────
+function exportData(){
+  const blob=new Blob([JSON.stringify(ST,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='tcdf_progresso_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('⬇ Arquivo exportado!');
+}
+
+function showImport(){
+  document.getElementById('imp-ta').value='';
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('show');
+}
+
+function importData(){
+  try{
+    const d=JSON.parse(document.getElementById('imp-ta').value.trim());
+    if(typeof d!=='object'||Array.isArray(d)) throw new Error('formato inválido');
+    ST={...ST,...d};
+    // ensure all keys exist
+    PHASES.forEach(ph=>ph.w.forEach(wk=>wk.d.forEach(dy=>{
+      if(!ST[dy.id]) ST[dy.id]={ok:0,q:0,a:0};
+    })));
+    save();
+    closeModal();
+    renderHeader();
+    renderBoard();
+    toast('✅ Progresso importado!');
+  }catch(e){
+    alert('JSON inválido. Exporte novamente e tente colar o conteúdo completo.');
+  }
+}
+
+document.getElementById('modal').addEventListener('click',function(e){
+  if(e.target===this) closeModal();
+});
+
+// ─── TOAST ──────────────────────────────
+let toastTimer=null;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ─── INIT ───────────────────────────────
+load();
+renderHeader();
+renderBoard();
+</script>
+</body>
+</html>
